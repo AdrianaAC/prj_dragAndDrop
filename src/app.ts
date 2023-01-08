@@ -1,3 +1,35 @@
+//Validation
+interface ToValidate {
+  value: string | number;
+  required?: boolean;
+  minLength?: number;
+  maxLength?: number;
+  minValue?: number;
+  maxValue?: number;
+}
+
+function validate(validation: ToValidate) {
+  let isValid = true;
+
+  if (validation.required) {
+    isValid = isValid && validation.value.toString().trim().length !== 0;
+  }
+  if (validation.minLength != null && typeof validation.value === "string") {
+    isValid = isValid && validation.value.length > validation.minLength;
+  }
+  if (validation.maxLength != null && typeof validation.value === "string") {
+    isValid = isValid && validation.value.length < validation.maxLength;
+  }
+  if (validation.minValue != null && typeof validation.value === "number") {
+    isValid = isValid && validation.value > validation.minValue;
+  }
+  if (validation.maxValue != null && typeof validation.value === "number") {
+    isValid = isValid && validation.value < validation.maxValue;
+  }
+
+  return isValid;
+}
+
 //autoBind decorator
 function autobind(
   target: any,
@@ -49,12 +81,31 @@ class ProjectInput {
     const enteredDesc = this.descriptionInput.value;
     const enteredPeople = this.peopleInput.value; //although the input is a number, the fetched value will be a string
 
+    const titleValidation: ToValidate = {
+      value: enteredTitle,
+      required: true,
+    };
+    const descValidation: ToValidate = {
+      value: enteredDesc,
+      required: true,
+      maxLength: 501,
+      minLength: 0,
+    };
+    const peopleValidation: ToValidate = {
+      value: +enteredPeople,
+      required: true,
+      minValue: 0,
+      maxValue: 31,
+    };
     if (
-      enteredTitle.trim().length === 0 ||
-      enteredDesc.trim().length === 0 ||
-      enteredPeople.trim().length === 0
+      !validate(titleValidation) ||
+      !validate(descValidation) ||
+      !validate(peopleValidation)
     ) {
       alert("Invalid input, please review your entered data and try again");
+      console.log(
+        "Invalid input, please review your entered data and try again"
+      );
       return;
     } else {
       return [enteredTitle, enteredDesc, +enteredPeople]; //+ converts the data to a number
