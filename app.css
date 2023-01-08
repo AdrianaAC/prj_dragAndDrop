@@ -57,11 +57,11 @@ button:active {
 
 .projects {
   margin: 1rem;
-  border: 1px solid #ff0062;
+  border: 1px solid green;
 }
 
 .projects header {
-  background: #ff0062;
+  background: green;
   height: 3.5rem;
   display: flex;
   justify-content: center;
@@ -74,6 +74,14 @@ button:active {
 
 #finished-projects header {
   background: #0044ff;
+}
+
+#canceled-projects {
+  border-color: #a80041;
+}
+
+#canceled-projects header {
+  background: #a80041;
 }
 
 .projects h2 {
@@ -94,8 +102,12 @@ button:active {
 }
 
 .projects li h2 {
-  color: #ff0062;
+  color: green;
   margin: 0.5rem 0;
+}
+
+#canceled-projects li h2 {
+  color: #a80041;
 }
 
 #finished-projects li h2 {

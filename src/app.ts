@@ -47,6 +47,37 @@ function autobind(
   return adjDescriptor;
 }
 
+//Project List class
+class ProjectList {
+  templateEl: HTMLTemplateElement;
+  hostEl: HTMLDivElement;
+  el: HTMLElement;
+
+  constructor(private prjType: "active" | "finished" | "canceled") {
+    this.templateEl = document.getElementById(
+      "project-list"
+    )! as HTMLTemplateElement;
+    this.hostEl = document.getElementById("app")! as HTMLDivElement;
+
+    const importedNode = document.importNode(this.templateEl.content, true);
+    this.el = importedNode.firstElementChild as HTMLElement;
+    this.el.id = `${this.prjType}-projects`;
+    this.attach();
+    this.renderContent();
+  }
+
+  private renderContent() {
+    const listId = `${this.prjType}-projects`;
+    this.el.querySelector("ul")!.id = listId;
+    this.el.querySelector("h2")!.textContent =
+      this.prjType.toUpperCase() + " projects";
+  }
+
+  private attach() {
+    this.hostEl.insertAdjacentElement("beforeend", this.el);
+  }
+}
+
 // Project Input class
 class ProjectInput {
   templateEl: HTMLTemplateElement;
@@ -103,9 +134,6 @@ class ProjectInput {
       !validate(peopleValidation)
     ) {
       alert("Invalid input, please review your entered data and try again");
-      console.log(
-        "Invalid input, please review your entered data and try again"
-      );
       return;
     } else {
       return [enteredTitle, enteredDesc, +enteredPeople]; //+ converts the data to a number
@@ -140,3 +168,6 @@ class ProjectInput {
 }
 
 const prjInput = new ProjectInput();
+const actPrjList = new ProjectList("active");
+const finPrjList = new ProjectList("finished");
+const canPrjList = new ProjectList("canceled");
