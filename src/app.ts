@@ -1,3 +1,39 @@
+//project state management
+class PrjState {
+  private listeners: any[] = [];
+  private projects: any[] = [];
+  private static instance: PrjState;
+
+  private constructor() {}
+
+  static getInstance() {
+    if (this.instance) {
+      return this.instance;
+    }
+    this.instance = new PrjState();
+    return this.instance;
+  }
+
+  addListener(listenerFn: Function) {
+    this.listeners.push(listenerFn);
+  }
+
+  addPrj(title: string, desc: string, people: number) {
+    const newPrj = {
+      id: Math.random().toString(),
+      title: title,
+      desc: desc,
+      people: people,
+    };
+    this.projects.push(newPrj);
+    for (const listenerFn of this.listeners) {
+      listenerFn(this.projects.slice());
+    }
+  }
+}
+
+const prjState = PrjState.getInstance();
+
 //Validation
 interface ToValidate {
   value: string | number;
@@ -52,22 +88,40 @@ class ProjectList {
   templateEl: HTMLTemplateElement;
   hostEl: HTMLDivElement;
   el: HTMLElement;
+  assignedPrj: any[];
 
   constructor(private prjType: "active" | "finished" | "canceled") {
     this.templateEl = document.getElementById(
       "project-list"
     )! as HTMLTemplateElement;
     this.hostEl = document.getElementById("app")! as HTMLDivElement;
+    this.assignedPrj = [];
 
     const importedNode = document.importNode(this.templateEl.content, true);
     this.el = importedNode.firstElementChild as HTMLElement;
     this.el.id = `${this.prjType}-projects`;
+    prjState.addListener((prjs: any[]) => {
+      this.assignedPrj = prjs;
+      this.renderPrj();
+    });
+
     this.attach();
     this.renderContent();
   }
 
+  private renderPrj() {
+    const listEl = document.getElementById(
+      `${this.prjType}-projects-list`
+    )! as HTMLUListElement;
+    for (const prjItem of this.assignedPrj) {
+      const listItem = document.createElement("li");
+      listItem.textContent = prjItem.title;
+      listEl?.appendChild(listItem);
+    }
+  }
+
   private renderContent() {
-    const listId = `${this.prjType}-projects`;
+    const listId = `${this.prjType}-projects-list`;
     this.el.querySelector("ul")!.id = listId;
     this.el.querySelector("h2")!.textContent =
       this.prjType.toUpperCase() + " projects";
@@ -153,7 +207,7 @@ class ProjectInput {
     if (Array.isArray(userInput)) {
       //Checking  if its an array, a tuple is an array
       const [title, desc, people] = userInput;
-      console.log(title, desc, people);
+      prjState.addPrj(title, desc, people);
       this.clearInput();
     }
   }
