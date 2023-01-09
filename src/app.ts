@@ -121,7 +121,16 @@ class ProjectList {
     this.el = importedNode.firstElementChild as HTMLElement;
     this.el.id = `${this.prjType}-projects`;
     prjState.addListener((prjs: Project[]) => {
-      this.assignedPrj = prjs;
+      const activePrj = prjs.filter((prj) => {
+        if (this.prjType === "active") {
+          return prj.status === ProjectStatus.Active;
+        } else if (this.prjType === "canceled") {
+          return prj.status === ProjectStatus.Canceled;
+        } else {
+          return prj.status === ProjectStatus.Finished;
+        }
+      });
+      this.assignedPrj = activePrj;
       this.renderPrj();
     });
 
@@ -133,6 +142,7 @@ class ProjectList {
     const listEl = document.getElementById(
       `${this.prjType}-projects-list`
     )! as HTMLUListElement;
+    listEl.innerHTML = "";
     for (const prjItem of this.assignedPrj) {
       const listItem = document.createElement("li");
       listItem.textContent = prjItem.title;
