@@ -1,5 +1,16 @@
-//Project Type
+//Drag & Drop Interfaces
+interface Draggable {
+  dragStartHandler(event: DragEvent): void;
+  dragEndHandler(event: DragEvent): void;
+}
 
+interface DragTarget {
+  dragOverHandler(event: DragEvent): void;
+  dropHandler(event: DragEvent): void;
+  dragLeaveHandler(event: DragEvent): void;
+}
+
+//Project Type
 enum ProjectStatus {
   Active,
   Finished,
@@ -15,7 +26,7 @@ class Project {
   ) {}
 }
 
-//project state management
+//Project State Management
 type Listener<T> = (items: T[]) => void;
 
 class State<T> {
@@ -90,7 +101,7 @@ function validate(validation: ToValidate) {
   return isValid;
 }
 
-//autoBind decorator
+//autoBind Decorator
 function autobind(
   target: any,
   methodName: string,
@@ -107,7 +118,7 @@ function autobind(
   return adjDescriptor;
 }
 
-//Base Component Class
+//BaseComponent Class
 abstract class Component<T extends HTMLElement, U extends HTMLElement> {
   templateEl: HTMLTemplateElement;
   hostEl: T;
@@ -143,8 +154,19 @@ abstract class Component<T extends HTMLElement, U extends HTMLElement> {
 }
 
 //ProjectItem Class
-class ProjectItem extends Component<HTMLUListElement, HTMLLIElement> {
+class ProjectItem
+  extends Component<HTMLUListElement, HTMLLIElement>
+  implements Draggable
+{
   private project: Project;
+
+  get persons() {
+    if (this.project.people === 1) {
+      return "1 person ";
+    } else {
+      return `${this.project.people} persons `;
+    }
+  }
 
   constructor(hostId: string, project: Project) {
     super("single-project", hostId, false, project.id);
@@ -153,16 +175,27 @@ class ProjectItem extends Component<HTMLUListElement, HTMLLIElement> {
     this.configure();
     this.renderContent();
   }
+  @autobind
+  dragStartHandler(event: DragEvent) {
+    console.log(event);
+  }
 
-  configure() {}
+  dragEndHandler(_: DragEvent) {
+    console.log("End event triggered");
+  }
+
+  configure() {
+    this.el.addEventListener("dragstart", this.dragStartHandler);
+    this.el.addEventListener("dragend", this.dragEndHandler);
+  }
   renderContent() {
     this.el.querySelector("h2")!.textContent = this.project.title;
-    this.el.querySelector("h3")!.textContent = this.project.people.toString();
+    this.el.querySelector("h3")!.textContent = this.persons + "assigned";
     this.el.querySelector("p")!.textContent = this.project.description;
   }
 }
 
-//Project List Class
+//ProjectList Class
 class ProjectList extends Component<HTMLDivElement, HTMLElement> {
   assignedPrj: Project[];
 
@@ -201,12 +234,12 @@ class ProjectList extends Component<HTMLDivElement, HTMLElement> {
     )! as HTMLUListElement;
     listEl.innerHTML = "";
     for (const prjItem of this.assignedPrj) {
-      new ProjectItem(this.el.querySelector("ul")!.id, prjItem); // ! hinst TS that we are sure there will be a value there, so no need for checks
+      new ProjectItem(this.el.querySelector("ul")!.id, prjItem); // ! hints TS that we are sure there will be a value there, so no need for checks
     }
   }
 }
 
-// Project Input class
+// ProjectInput Class
 class ProjectInput extends Component<HTMLDivElement, HTMLFormElement> {
   titleInput: HTMLInputElement;
   descriptionInput: HTMLInputElement;
