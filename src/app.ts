@@ -177,7 +177,8 @@ class ProjectItem
   }
   @autobind
   dragStartHandler(event: DragEvent) {
-    console.log(event);
+    event.dataTransfer!.setData("text/plain", this.project.id);
+    event.dataTransfer!.effectAllowed = "move";
   }
 
   dragEndHandler(_: DragEvent) {
@@ -196,12 +197,43 @@ class ProjectItem
 }
 
 //ProjectList Class
-class ProjectList extends Component<HTMLDivElement, HTMLElement> {
+class ProjectList
+  extends Component<HTMLDivElement, HTMLElement>
+  implements DragTarget
+{
   assignedPrj: Project[];
 
   constructor(private prjType: "active" | "finished" | "canceled") {
     super("project-list", "app", false, `${prjType}-projects`);
     this.assignedPrj = [];
+    this.configure();
+    this.renderContent();
+  }
+
+  @autobind
+  dragOverHandler(event: DragEvent) {
+    if (event.dataTransfer && event.dataTransfer.types[0] === "text/plain") {
+      event.preventDefault();
+      const listEl = this.el.querySelector("ul")!;
+      listEl.classList.add("droppable");
+    }
+  }
+
+  dropHandler(event: DragEvent) {
+    console.log(event);
+  }
+
+  @autobind
+  dragLeaveHandler(_: DragEvent) {
+    const listEl = this.el.querySelector("ul")!;
+    listEl.classList.remove("droppable");
+  }
+
+  configure() {
+    this.el.addEventListener("dragover", this.dragOverHandler);
+    this.el.addEventListener("dragleave", this.dragLeaveHandler);
+    this.el.addEventListener("drop", this.dropHandler);
+
     prjState.addListener((prjs: Project[]) => {
       const activePrj = prjs.filter((prj) => {
         if (this.prjType === "active") {
@@ -215,11 +247,7 @@ class ProjectList extends Component<HTMLDivElement, HTMLElement> {
       this.assignedPrj = activePrj;
       this.renderPrj();
     });
-    this.configure();
-    this.renderContent();
   }
-
-  configure() {}
 
   renderContent() {
     const listId = `${this.prjType}-projects-list`;

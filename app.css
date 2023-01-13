@@ -124,6 +124,10 @@ button:active {
   margin: 0;
 }
 
+#active-projects .droppable {
+  background: #a6e7a6;
+}
+
 .droppable {
   background: #ffe3ee;
 }
