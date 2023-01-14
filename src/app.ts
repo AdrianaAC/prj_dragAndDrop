@@ -61,6 +61,18 @@ class PrjState extends State<Project> {
       ProjectStatus.Active
     );
     this.projects.push(newPrj);
+    this.updateListeners();
+  }
+
+  movePrj(prjIds: string, newStatus: ProjectStatus) {
+    const project = this.projects.find((prj) => prj.id === prjIds);
+    if (project) {
+      project.status = newStatus;
+      this.updateListeners();
+    }
+  }
+
+  private updateListeners() {
     for (const listenerFn of this.listeners) {
       listenerFn(this.projects.slice());
     }
@@ -218,9 +230,17 @@ class ProjectList
       listEl.classList.add("droppable");
     }
   }
-
+  @autobind
   dropHandler(event: DragEvent) {
-    console.log(event);
+    const prjId = event.dataTransfer!.getData("text/plain");
+    prjState.movePrj(
+      prjId,
+      this.prjType === "canceled"
+        ? ProjectStatus.Canceled
+        : this.prjType === "finished"
+        ? ProjectStatus.Finished
+        : ProjectStatus.Active
+    );
   }
 
   @autobind
